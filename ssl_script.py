@@ -18,12 +18,22 @@ def check_ssl_expiry(domain):
         return None
 
 def send_slack_alert(domain, days_until_expiry, slack_webhook):
-    message = f"SSL Expiry Alert\n" \
-              f"* Domain : {domain}\n" \
-              f"* Warning : The SSL certificate for {domain} will expire in {days_until_expiry} days."
+    alert_message = (
+        f":rotating_light: **SSL Certificate Expiry Alert** :rotating_light:\n"
+        f"Domain: `{domain}`\n"
+        f"Certificate will expire in: **{days_until_expiry} days**"
+    )
 
     payload = {
-        "text": message
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": alert_message
+                }
+            }
+        ]
     }
 
     response = requests.post(slack_webhook, json=payload)
@@ -31,11 +41,10 @@ def send_slack_alert(domain, days_until_expiry, slack_webhook):
         print(f"Failed to send Slack alert for {domain}")
 
 if __name__ == "__main__":
-    domains = ["linkedin.com", "facebook.com"] 
-    slack_webhook = os.environ["SLACK_WEBHOOK_URL"]  
+    domains = ["example.com", "anotherdomain.com"]  # Replace with your domain names
+    slack_webhook = os.environ["SLACK_WEBHOOK_URL"]  # Replace with your Slack webhook URL
 
     for domain in domains:
         days_until_expiry = check_ssl_expiry(domain)
         if days_until_expiry is not None and days_until_expiry <= 30:
             send_slack_alert(domain, days_until_expiry, slack_webhook)
-
