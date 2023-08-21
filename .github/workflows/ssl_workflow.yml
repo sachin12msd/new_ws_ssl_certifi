@@ -2,7 +2,7 @@ name: SSL Expiry Checker
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  
+    - cron: '55 16 * * * *'  
   workflow_dispatch:     
 
 jobs:
