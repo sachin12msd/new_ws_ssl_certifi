@@ -43,6 +43,6 @@ jobs:
               # Send alert to Slack
               curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" "${{ secrets.SLACK_WEBHOOK_URL }}"
             fi
-          done
-         env:
+         done
+        env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
