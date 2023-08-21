@@ -40,5 +40,5 @@ jobs:
               DAYS_LEFT=$(( ($EXPIRY_TIMESTAMP - $CURRENT_TIMESTAMP) / 86400 ))
               SLACK_MESSAGE="{\"text\":\"SSL Expiry Alert\\n* Domain : $DOMAIN\\n* Warning : The SSL certificate for $DOMAIN will expire in $DAYS_LEFT days.\"}"
             fi
-            curl -X POST -H 'Content-type: application/json' --data "$SLACK_MESSAGE" $SLACK_WEBHOOK_URL
+            curl  -k -X POST -H 'Content-type: application/json' --data "$SLACK_MESSAGE" $SLACK_WEBHOOK_URL
           done
