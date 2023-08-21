@@ -37,7 +37,7 @@ jobs:
             remaining_days=$(( ($expiry_date_epoch - $current_date) / 86400 ))
   
             if [[ $remaining_days -lt 30 ]]; then
-              message="SSL Expiry Alert\n* Domain : $domain\n* Warning : The SSL certificate for $domain will expire in $remaining_days days."
+              message="SSL Expiry Alert\n* Domain : $domain\n* Warning : The SSL certificate for $domain will expires in $remaining_days days."
               echo "$message"
   
               # Send alert to Slack
