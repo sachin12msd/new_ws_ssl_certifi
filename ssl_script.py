@@ -41,7 +41,7 @@ def send_slack_alert(domain, days_until_expiry, slack_webhook):
         print(f"Failed to send Slack alert for {domain}")
 
 if __name__ == "__main__":
-    domains = ["example.com", "anotherdomain.com"]  
+    domains = ["google.com", "facebook.com"]  
     slack_webhook = os.environ["SLACK_WEBHOOK_URL"]  
 
     for domain in domains:
