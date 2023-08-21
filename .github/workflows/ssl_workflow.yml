@@ -47,5 +47,8 @@ jobs:
         run: echo "$SERVER_SSH_PRIVATE_KEY" > ssh_key && chmod 600 ssh_key
 
       - name: Perform server action
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
         run: |
-          ssh -i ssh_key user@server_ip "echo 'Server action performed'"
+          ssh -i ssh_key $SERVER_USERNAME@$SERVER_IP "echo 'Server action performed'"
