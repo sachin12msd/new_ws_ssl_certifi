@@ -51,4 +51,4 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
         run: |
-          ssh -i ssh_key $SERVER_USERNAME@$SERVER_IP "echo 'Server action performed'"
+          ssh -i ssh_key ec2-user@65.0.133.226 "echo 'Server action performed'"
