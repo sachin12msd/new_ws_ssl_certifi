@@ -1,4 +1,4 @@
-name: Check SSL Expiry and Perform Server Action
+name: Check SSL Expiry
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:     
 
 jobs:
-  check-ssl-and-perform-action:
+  check-ssl:
     runs-on: ubuntu-latest
     
     steps:
@@ -42,13 +42,3 @@ jobs:
             fi
             curl -X POST -H 'Content-type: application/json' --data "$SLACK_MESSAGE" $SLACK_WEBHOOK_URL
           done
-
-      - name: Set up SSH key for server action
-        run: echo "$SERVER_SSH_PRIVATE_KEY" > ssh_key && chmod 600 ssh_key
-
-      - name: Perform server action
-        env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
-        run: |
-          ssh -i ssh_key ec2-user@65.0.133.226 "echo 'Server action performed'"
