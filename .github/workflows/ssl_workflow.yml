@@ -25,5 +25,5 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          python ssl_expiry_checker.py
+          python ssl_script.py
 
