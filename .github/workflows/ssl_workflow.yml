@@ -1,29 +1,39 @@
-name: SSL Expiry Checker
+name: SSL Expiry Check
 
 on:
   schedule:
-    - cron: '55 16 * * * *'  
-  workflow_dispatch:     
+    - cron: '0 0 * * *' # Run every day at midnight
+  workflow_dispatch: # Manual trigger
 
 jobs:
   check-ssl:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      
-      - name: Install dependencies
-        run: pip install requests
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-      - name: Run SSL check and send alerts
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          python ssl_script.py
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
 
+    - name: Install Dependencies
+      run: npm install axios # Install axios for HTTP requests
+    
+    - name: Check SSL Expiry
+      run: |
+        for domain in ${{ secrets.DOMAIN_LIST }}; do
+          expiry_date=$(echo | openssl s_client -servername "$domain" -connect "$domain":443 2>/dev/null | openssl x509 -noout -dates | grep "notAfter" | cut -d= -f2)
+          current_date=$(date +%s)
+          expiry_date_epoch=$(date -d "$expiry_date" +%s)
+          remaining_days=$(( ($expiry_date_epoch - $current_date) / 86400 ))
+
+          if [[ $remaining_days -lt 30 ]]; then
+            message="SSL Expiry Alert\n* Domain : $domain\n* Warning : The SSL certificate for $domain will expire in $remaining_days days."
+            echo "$message"
+
+            # Send alert to Slack
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" "${{ secrets.SLACK_WEBHOOK_URL }}"
+          fi
+        done
