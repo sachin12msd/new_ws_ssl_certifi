@@ -2,8 +2,8 @@ name: SSL Expiry Check and Server Action
 
 on:
   schedule:
-    - cron: '0 0 * * *' 
-  workflow_dispatch: 
+    - cron: '0 0 * * *' # Run every day at midnight
+  workflow_dispatch: # Manual trigger
 
 jobs:
   check-ssl-and-perform-action:
