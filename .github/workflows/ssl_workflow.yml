@@ -1,0 +1,29 @@
+name: SSL Expiry Checker
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  
+  workflow_dispatch:     
+
+jobs:
+  check-ssl:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run SSL check and send alerts
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python ssl_expiry_checker.py
+
