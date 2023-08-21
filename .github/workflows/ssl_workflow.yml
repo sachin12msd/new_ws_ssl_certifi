@@ -3,7 +3,7 @@ name: SSL Expiry Check and Server Action
 on:
   schedule:
     - cron: '0 0 * * *' 
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   check-ssl-and-perform-action:
@@ -19,11 +19,12 @@ jobs:
         node-version: 14
 
     - name: Install Dependencies
-      run: npm install axios # Install axios for HTTP requests
+      run: npm install axios
     
     - name: Check SSL Expiry and Send Alerts
       run: |
-        for domain in ${{ secrets.DOMAIN_LIST }}; do
+        IFS=$'\n' read -rd '' -a domains <<< "${{ secrets.DOMAIN_LIST }}"
+        for domain in "${domains[@]}"; do
           expiry_date=$(openssl s_client -servername "$domain" -connect "$domain":443 2>/dev/null | openssl x509 -noout -dates | awk -F= '/notAfter/ {print $2}')
           current_date=$(date +%s)
           expiry_date_epoch=$(date -d "$expiry_date" +%s)
@@ -32,16 +33,11 @@ jobs:
           if [[ $remaining_days -lt 30 ]]; then
             message="SSL Expiry Alert\n* Domain : $domain\n* Warning : The SSL certificate for $domain will expire in $remaining_days days."
             echo "$message"
-
-            # Send alert to Slack
             curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" "${{ secrets.SLACK_WEBHOOK_URL }}"
           fi
         done
         
-        # Assuming you have an SSH key added to your repository secrets named SERVER_SSH_PRIVATE_KEY
-        # Create a file for the private key and set appropriate permissions
         echo "$SERVER_SSH_PRIVATE_KEY" > ssh_key
         chmod 600 ssh_key
         
-        # Use the private key for authentication and run a command on the server
         ssh -i ssh_key user@server_ip "echo 'Server action performed'"
