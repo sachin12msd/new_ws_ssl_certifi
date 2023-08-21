@@ -30,15 +30,17 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          for DOMAIN in "${DOMAINS[@]}"; do
-            EXPIRY_DATE=$(openssl s_client -connect $DOMAIN:443 -servername $DOMAIN 2>/dev/null | openssl x509 -noout -enddate | awk -F'=' '{print $2}')
-            if [ -z "$EXPIRY_DATE" ]; then
-              SLACK_MESSAGE="{\"text\":\"SSL Expiry Alert\\n* Domain : $DOMAIN\\n* Warning : Unable to retrieve SSL expiry information for $DOMAIN.\"}"
-            else
-              EXPIRY_TIMESTAMP=$(date -d "$EXPIRY_DATE" +%s)
-              CURRENT_TIMESTAMP=$(date +%s)
-              DAYS_LEFT=$(( ($EXPIRY_TIMESTAMP - $CURRENT_TIMESTAMP) / 86400 ))
-              SLACK_MESSAGE="{\"text\":\"SSL Expiry Alert\\n* Domain : $DOMAIN\\n* Warning : The SSL certificate for $DOMAIN will expire in $DAYS_LEFT days.\"}"
+         for domain in ${{ secrets.DOMAIN_LIST }}; do
+            expiry_date=$(echo | openssl s_client -servername "$domain" -connect "$domain":443 2>/dev/null | openssl x509 -noout -dates | grep "notAfter" | cut -d= -f2)
+            current_date=$(date +%s)
+            expiry_date_epoch=$(date -d "$expiry_date" +%s)
+            remaining_days=$(( ($expiry_date_epoch - $current_date) / 86400 ))
+
+            if [[ $remaining_days -lt 30 ]]; then
+              message="SSL Expiry Alert\n* Domain : $domain\n* Warning : The SSL certificate for $domain will expire in $remaining_days days."
+              echo "$message"
+
+              # Send alert to Slack
+              curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" "${{ secrets.SLACK_WEBHOOK_URL }}"
             fi
-            curl  -k -X POST -H 'Content-type: application/json' --data "$SLACK_MESSAGE" $SLACK_WEBHOOK_URL
           done
