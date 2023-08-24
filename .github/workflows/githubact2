@@ -1,0 +1,41 @@
+name: Check SSL Expiry
+
+on:
+  schedule:
+    - cron: '50 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-ssl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install axios
+
+      - name: Get domain names from secrets
+        run: |
+          DOMAIN_SECRETS=$(env | grep 'DOMAIN_LIST' | cut -d= -f2-)
+          IFS=$'\n' DOMAINS=($DOMAIN_SECRETS)
+
+      - name: Send Slack notifications
+        uses: act10ns/slack@v1
+        with:
+          status: starting
+          channel: '#meetups'
+          message: |
+            SSL Expiry Alert
+            * Domain: ${{ domain }}
+            * Warning: The SSL certificate for ${{ domain }} will expire in ${{ remaining_days }} days.
+        if: always()
+        env:
+          domain: ${{ domain }}
+          remaining_days: ${{ remaining_days }}
