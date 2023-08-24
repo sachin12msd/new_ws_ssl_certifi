@@ -2,7 +2,7 @@ name: Check SSL Expiry
 
 on:
   schedule:
-     - cron: '50 10 * * *'
+    - cron: '50 10 * * *'
   workflow_dispatch:
 
 jobs:
@@ -20,11 +20,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install axios
-
-      - name: Get domain names from secrets
-        run: |
-          DOMAIN_SECRETS=$(env | grep 'DOMAIN_LIST' | cut -d= -f2-)
-          IFS=$'\n' DOMAINS=($DOMAIN_SECRETS)
 
       - name: Get domain names from secrets
         run: |
